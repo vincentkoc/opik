@@ -3,6 +3,7 @@ from .heuristics.contains import Contains
 from .heuristics.equals import Equals
 from .heuristics.is_json import IsJson
 from .heuristics.levenshtein_ratio import LevenshteinRatio
+from .heuristics.reading_level import ReadingLevel
 from .heuristics.regex_match import RegexMatch
 from .heuristics.bleu import SentenceBLEU, CorpusBLEU
 from .heuristics.rouge import ROUGE
@@ -30,6 +31,7 @@ __all__ = [
     "Hallucination",
     "IsJson",
     "LevenshteinRatio",
+    "ReadingLevel",
     "Moderation",
     "Usefulness",
     "RegexMatch",

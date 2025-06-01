@@ -6,6 +6,7 @@ from opik.evaluation.metrics.heuristics import (
     levenshtein_ratio,
     regex_match,
     rouge,
+    reading_level,
 )
 from opik.evaluation.metrics.score_result import ScoreResult
 from opik.evaluation.metrics.heuristics.bleu import SentenceBLEU, CorpusBLEU
@@ -497,3 +498,16 @@ def test_rouge_score_using_custom_tokenizer(
         f"For candidate='{candidate}' vs reference='{reference}', "
         f"expected rouge1 score in [{expected_min}, {expected_max}], got {result.value:.4f}"
     )
+
+
+def test_reading_level_basic():
+    metric = reading_level.ReadingLevel()
+    result = metric.score(output="This is a simple sentence.")
+    assert isinstance(result, ScoreResult)
+    assert 0.0 <= result.value <= 20.0
+
+
+def test_reading_level_empty():
+    metric = reading_level.ReadingLevel()
+    with pytest.raises(MetricComputationError):
+        metric.score("")
