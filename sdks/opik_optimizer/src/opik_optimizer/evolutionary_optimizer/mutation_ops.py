@@ -13,7 +13,7 @@ from . import reporting
 logger = logging.getLogger(__name__)
 
 
-class MutationMixin:
+class MutationOps:
     def _deap_mutation(
         self, individual: Any, initial_prompt: chat_prompt.ChatPrompt
     ) -> Any:

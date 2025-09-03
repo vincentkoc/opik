@@ -20,13 +20,13 @@ from opik_optimizer.optimizable_agent import OptimizableAgent
 
 from .. import utils
 from . import reporting
-from .llm_mixin import LlmMixin
-from .mutation_mixin import MutationMixin
-from .crossover_mixin import CrossoverMixin
-from .population_mixin import PopulationMixin
-from .evaluation_mixin import EvaluationMixin
-from .helpers_mixin import HelpersMixin
-from .style_mixin import StyleMixin
+from .llm_support import LlmSupport
+from .mutation_ops import MutationOps
+from .crossover_ops import CrossoverOps
+from .population_ops import PopulationOps
+from .evaluation_ops import EvaluationOps
+from .helpers import Helpers
+from .style_ops import StyleOps
 from . import prompts as evo_prompts
 
 logger = logging.getLogger(__name__)
@@ -185,7 +185,7 @@ class EvolutionaryOptimizer(BaseOptimizer):
         self.toolbox = base.Toolbox()
         # Attach methods from helper mixin modules to this instance to avoid
         # multiple inheritance while preserving behavior.
-        self._attach_mixin_methods()
+        self._attach_helper_methods()
         self.toolbox.register(
             "default_individual", lambda: creator.Individual("placeholder")
         )
@@ -217,7 +217,7 @@ class EvolutionaryOptimizer(BaseOptimizer):
 
         # (methods already attached above)
 
-    def _attach_mixin_methods(self) -> None:
+    def _attach_helper_methods(self) -> None:
         """Bind selected methods from mixin modules onto this instance."""
 
         def bind(cls: Any, names: List[str]) -> None:
@@ -226,11 +226,11 @@ class EvolutionaryOptimizer(BaseOptimizer):
                 setattr(self, name, func.__get__(self, self.__class__))
 
         # LLM calls
-        bind(LlmMixin, ["_call_model"])
+        bind(LlmSupport, ["_call_model"])
 
         # Mutations
         bind(
-            MutationMixin,
+            MutationOps,
             [
                 "_deap_mutation",
                 "_semantic_mutation",
@@ -245,7 +245,7 @@ class EvolutionaryOptimizer(BaseOptimizer):
 
         # Crossover
         bind(
-            CrossoverMixin,
+            CrossoverOps,
             [
                 "_deap_crossover_chunking_strategy",
                 "_deap_crossover_word_level",
@@ -256,7 +256,7 @@ class EvolutionaryOptimizer(BaseOptimizer):
 
         # Population management
         bind(
-            PopulationMixin,
+            PopulationOps,
             [
                 "_initialize_population",
                 "_should_restart_population",
@@ -265,13 +265,13 @@ class EvolutionaryOptimizer(BaseOptimizer):
         )
 
         # Evaluation
-        bind(EvaluationMixin, ["_evaluate_prompt"])
+        bind(EvaluationOps, ["_evaluate_prompt"])
 
         # Helpers
-        bind(HelpersMixin, ["_get_task_description_for_llm"])
+        bind(Helpers, ["_get_task_description_for_llm"])
 
         # Style inference
-        bind(StyleMixin, ["_infer_output_style_from_dataset"])
+        bind(StyleOps, ["_infer_output_style_from_dataset"])
 
     def _get_adaptive_mutation_rate(self) -> float:
         """Calculate adaptive mutation rate based on population diversity and progress."""
@@ -934,10 +934,10 @@ class EvolutionaryOptimizer(BaseOptimizer):
             optimization_id=self._current_optimization_id,
         )
 
-    # Evaluation is provided by EvaluationMixin
+    # Evaluation is provided by EvaluationOps
 
-    # LLM crossover is provided by CrossoverMixin
-    # Helper provided by HelpersMixin
+    # LLM crossover is provided by CrossoverOps
+    # Helper provided by Helpers
 
     # Override prompt builders to centralize strings in prompts.py
     def _get_reasoning_system_prompt_for_variation(self) -> str:

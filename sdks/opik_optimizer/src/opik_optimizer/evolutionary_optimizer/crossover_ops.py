@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 creator = _creator  # alias used in original file
 
 
-class CrossoverMixin:
+class CrossoverOps:
     def _deap_crossover_chunking_strategy(
         self, messages_1_str: str, messages_2_str: str
     ) -> Tuple[str, str]:

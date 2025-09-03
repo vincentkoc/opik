@@ -6,7 +6,7 @@ from ..optimization_config import mappers, chat_prompt
 import opik
 
 
-class EvaluationMixin:
+class EvaluationOps:
     def _evaluate_prompt(
         self,
         prompt: chat_prompt.ChatPrompt,

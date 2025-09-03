@@ -22,7 +22,7 @@ litellm.cache = Cache(type=LiteLLMCacheType.DISK, disk_cache_dir=disk_cache_dir)
 _rate_limiter = _throttle.get_rate_limiter_for_current_opik_installation()
 
 
-class LlmMixin:
+class LlmSupport:
     @_throttle.rate_limited(_rate_limiter)
     def _call_model(
         self,

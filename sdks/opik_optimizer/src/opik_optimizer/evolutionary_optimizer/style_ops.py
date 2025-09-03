@@ -12,7 +12,7 @@ from ..optimization_config import chat_prompt
 logger = logging.getLogger(__name__)
 
 
-class StyleMixin:
+class StyleOps:
     def _infer_output_style_from_dataset(
         self, dataset: opik.Dataset, prompt: chat_prompt.ChatPrompt, n_examples: int = 5
     ) -> Optional[str]:

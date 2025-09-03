@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 creator = _creator
 
 
-class PopulationMixin:
+class PopulationOps:
     # Hints for mixin attributes provided by the concrete optimizer class
     _gens_since_pop_improvement: int
     _best_primary_score_history: List[float]
