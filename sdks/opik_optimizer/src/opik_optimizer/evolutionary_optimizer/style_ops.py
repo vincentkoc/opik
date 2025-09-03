@@ -51,15 +51,9 @@ class StyleOps:
                     f"Example {i+1}:\nDataset Item:\n{filtered_content}\n---\n"
                 )
 
-            user_prompt_for_style_inference = f"""Please analyze the following examples from a dataset and provide a concise, actionable description of the REQUIRED output style for the target LLM. Before describing the output style, make sure to understand the dataset content and structure as it can include input, output and metadata fields. This description will be used to guide other LLMs in generating and refining prompts.
-
-    {examples_str}
-
-    Based on these examples, what is the desired output style description?
-    Remember to focus on aspects like length, tone, structure, content details, and any recurring keywords or phrasing patterns in the outputs.
-    The description should be a single string that can be directly used as an instruction for another LLM.
-    Return ONLY this descriptive string.
-    """
+            user_prompt_for_style_inference = evo_prompts.style_inference_user_prompt(
+                examples_str
+            )
 
             try:
                 inferred_style = self._call_model(
