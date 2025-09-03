@@ -1,42 +1,15 @@
 import opik
 
-TINY_TEST_ITEMS = [
-    {
-        "text": "What is the capital of France?",
-        "label": "Paris",
-        "metadata": {"context": "France is a country in Europe. Its capital is Paris."},
-    },
-    {
-        "text": "Who wrote Romeo and Juliet?",
-        "label": "William Shakespeare",
-        "metadata": {
-            "context": "Romeo and Juliet is a famous play written by William Shakespeare."
-        },
-    },
-    {
-        "text": "What is 2 + 2?",
-        "label": "4",
-        "metadata": {"context": "Basic arithmetic: 2 + 2 equals 4."},
-    },
-    {
-        "text": "What is the largest planet in our solar system?",
-        "label": "Jupiter",
-        "metadata": {"context": "Jupiter is the largest planet in our solar system."},
-    },
-    {
-        "text": "Who painted the Mona Lisa?",
-        "label": "Leonardo da Vinci",
-        "metadata": {"context": "The Mona Lisa was painted by Leonardo da Vinci."},
-    },
-]
-
 
 def tiny_test(test_mode: bool = False) -> opik.Dataset:
     """
-    Dataset containing the first 5 samples of the HotpotQA dataset.
+    Tiny QA benchmark (core_en subset from vincentkoc/tiny_qa_benchmark_pp).
+
+    Keeps the same dataset reference ("tiny_test") but switches the source
+    to Hugging Face. Only the first 5 items are used to keep this dataset tiny.
     """
     dataset_name = "tiny_test" if not test_mode else "tiny_test_test"
-    nb_items = len(TINY_TEST_ITEMS)
+    nb_items = 5  # keep tiny dataset size consistent with tests/docs
 
     client = opik.Opik()
     dataset = client.get_or_create_dataset(dataset_name)
@@ -49,5 +22,36 @@ def tiny_test(test_mode: bool = False) -> opik.Dataset:
             f"Dataset {dataset_name} contains {len(items)} items, expected {nb_items}. We recommend deleting the dataset and re-creating it."
         )
     elif len(items) == 0:
-        dataset.insert(TINY_TEST_ITEMS)
+        import datasets as ds
+
+        # Follow existing HF loading style from other datasets
+        download_config = ds.DownloadConfig(download_desc=False, disable_tqdm=True)
+        ds.disable_progress_bar()
+
+        # Load only the core_en subset JSONL from the repo
+        # Use the generic JSON loader with streaming for efficiency
+        hf_dataset = ds.load_dataset(
+            "json",
+            data_files=
+            "https://huggingface.co/datasets/vincentkoc/tiny_qa_benchmark_pp/resolve/main/data/core_en/core_en.jsonl?download=true",
+            streaming=True,
+            download_config=download_config,
+        )["train"]
+
+        data = []
+        for i, item in enumerate(hf_dataset):
+            if i >= nb_items:
+                break
+            data.append(
+                {
+                    "text": item.get("text", ""),
+                    "label": item.get("label", ""),
+                    # Preserve original tiny_test shape with metadata.context
+                    "metadata": {"context": item.get("context", "")},
+                }
+            )
+
+        ds.enable_progress_bar()
+
+        dataset.insert(data)
         return dataset
