@@ -35,16 +35,7 @@ tqdm = get_tqdm_for_current_environment()
 creator = cast(Any, _creator)  # type: ignore[assignment]
 
 
-class EvolutionaryOptimizer(
-    LlmMixin,
-    MutationMixin,
-    CrossoverMixin,
-    PopulationMixin,
-    EvaluationMixin,
-    HelpersMixin,
-    StyleMixin,
-    BaseOptimizer,
-):
+class EvolutionaryOptimizer(BaseOptimizer):
     """
     The Evolutionary Optimizer can be used to optimize prompts using a 4 stage genetic algorithm
     approach:
@@ -192,6 +183,9 @@ class EvolutionaryOptimizer(
             creator.create("Individual", list, fitness=fitness_attr)
 
         self.toolbox = base.Toolbox()
+        # Attach methods from helper mixin modules to this instance to avoid
+        # multiple inheritance while preserving behavior.
+        self._attach_mixin_methods()
         self.toolbox.register(
             "default_individual", lambda: creator.Individual("placeholder")
         )
@@ -220,6 +214,64 @@ class EvolutionaryOptimizer(
             f"population_size: {self.population_size}, num_generations: {self.num_generations}, "
             f"mutation_rate: {self.mutation_rate}, crossover_rate: {self.crossover_rate}"
         )
+
+        # (methods already attached above)
+
+    def _attach_mixin_methods(self) -> None:
+        """Bind selected methods from mixin modules onto this instance."""
+
+        def bind(cls: Any, names: List[str]) -> None:
+            for name in names:
+                func = getattr(cls, name)
+                setattr(self, name, func.__get__(self, self.__class__))
+
+        # LLM calls
+        bind(LlmMixin, ["_call_model"])
+
+        # Mutations
+        bind(
+            MutationMixin,
+            [
+                "_deap_mutation",
+                "_semantic_mutation",
+                "_structural_mutation",
+                "_word_level_mutation_prompt",
+                "_word_level_mutation",
+                "_get_synonym",
+                "_modify_phrase",
+                "_radical_innovation_mutation",
+            ],
+        )
+
+        # Crossover
+        bind(
+            CrossoverMixin,
+            [
+                "_deap_crossover_chunking_strategy",
+                "_deap_crossover_word_level",
+                "_deap_crossover",
+                "_llm_deap_crossover",
+            ],
+        )
+
+        # Population management
+        bind(
+            PopulationMixin,
+            [
+                "_initialize_population",
+                "_should_restart_population",
+                "_restart_population",
+            ],
+        )
+
+        # Evaluation
+        bind(EvaluationMixin, ["_evaluate_prompt"])
+
+        # Helpers
+        bind(HelpersMixin, ["_get_task_description_for_llm"])
+
+        # Style inference
+        bind(StyleMixin, ["_infer_output_style_from_dataset"])
 
     def _get_adaptive_mutation_rate(self) -> float:
         """Calculate adaptive mutation rate based on population diversity and progress."""
