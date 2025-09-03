@@ -1,6 +1,5 @@
 from typing import Any, Callable, Dict, List, Optional
 
-import json
 
 from .. import task_evaluator
 from ..optimization_config import mappers, chat_prompt
@@ -67,4 +66,3 @@ class EvaluationMixin:
             verbose=verbose,
         )
         return score
-

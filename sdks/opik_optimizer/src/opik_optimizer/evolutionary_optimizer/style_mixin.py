@@ -17,7 +17,9 @@ class StyleMixin:
         self, dataset: opik.Dataset, prompt: chat_prompt.ChatPrompt, n_examples: int = 5
     ) -> Optional[str]:
         """Analyzes dataset examples to infer the desired output style using the LLM."""
-        with reporting.infer_output_style(verbose=self.verbose) as report_infer_output_style:
+        with reporting.infer_output_style(
+            verbose=self.verbose
+        ) as report_infer_output_style:
             report_infer_output_style.start_style_inference()
 
             try:
@@ -62,7 +64,10 @@ class StyleMixin:
             try:
                 inferred_style = self._call_model(
                     messages=[
-                        {"role": "system", "content": evo_prompts.INFER_STYLE_SYSTEM_PROMPT},
+                        {
+                            "role": "system",
+                            "content": evo_prompts.INFER_STYLE_SYSTEM_PROMPT,
+                        },
                         {"role": "user", "content": user_prompt_for_style_inference},
                     ],
                     is_reasoning=True,
@@ -81,4 +86,3 @@ class StyleMixin:
                     f"Error during output style inference: {e}"
                 )
                 return None
-

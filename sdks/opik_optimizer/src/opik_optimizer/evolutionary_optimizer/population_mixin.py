@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, List, Set
 
 import json
 import logging
-import random
 
 from deap import tools
 from deap import creator as _creator
@@ -18,6 +17,16 @@ creator = _creator
 
 
 class PopulationMixin:
+    # Hints for mixin attributes provided by the concrete optimizer class
+    _gens_since_pop_improvement: int
+    _best_primary_score_history: List[float]
+    DEFAULT_RESTART_THRESHOLD: float
+    DEFAULT_RESTART_GENERATIONS: int
+    enable_moo: bool
+    elitism_size: int
+    population_size: int
+    verbose: int
+
     def _initialize_population(
         self, prompt: chat_prompt.ChatPrompt
     ) -> List[chat_prompt.ChatPrompt]:
@@ -205,11 +214,11 @@ class PopulationMixin:
                 1 + self.DEFAULT_RESTART_THRESHOLD
             )
             if curr_best < threshold:
-                self._gens_since_pop_improvement += 1
+                self._gens_since_pop_improvement += 1  # type: ignore[attr-defined]
             else:
-                self._gens_since_pop_improvement = 0
+                self._gens_since_pop_improvement = 0  # type: ignore[attr-defined]
         self._best_primary_score_history.append(curr_best)
-        return self._gens_since_pop_improvement >= self.DEFAULT_RESTART_GENERATIONS
+        return self._gens_since_pop_improvement >= self.DEFAULT_RESTART_GENERATIONS  # type: ignore[attr-defined]
 
     def _restart_population(
         self,
@@ -237,6 +246,5 @@ class PopulationMixin:
         for ind, fit in zip(new_pop, map(self.toolbox.evaluate, new_pop)):
             ind.fitness.values = fit
 
-        self._gens_since_pop_improvement = 0
+        self._gens_since_pop_improvement = 0  # type: ignore[attr-defined]
         return new_pop
-

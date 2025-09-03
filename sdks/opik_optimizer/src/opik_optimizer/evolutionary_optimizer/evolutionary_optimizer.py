@@ -1,7 +1,7 @@
 import json
 import logging
 import random
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, cast, Type
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast, Type
 
 import rapidfuzz.distance.Indel
 import numpy as np
@@ -14,7 +14,7 @@ from opik.api_objects import opik_client, optimization
 from opik.environment import get_tqdm_for_current_environment
 
 from opik_optimizer.base_optimizer import BaseOptimizer, OptimizationRound
-from opik_optimizer.optimization_config import chat_prompt, mappers
+from opik_optimizer.optimization_config import chat_prompt
 from opik_optimizer.optimization_result import OptimizationResult
 from opik_optimizer.optimizable_agent import OptimizableAgent
 
@@ -279,21 +279,7 @@ class EvolutionaryOptimizer(
 
         return total_distance / count if count > 0 else 0.0
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
     # Mutations and helpers are implemented in mixins.
-
-    
 
     def _should_restart_population(self, curr_best: float) -> bool:
         """

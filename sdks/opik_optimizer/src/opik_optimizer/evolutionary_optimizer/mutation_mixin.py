@@ -109,14 +109,12 @@ class MutationMixin:
                 ),
             }
 
-            user_prompt_for_semantic_mutation = (
-                f"""Given this prompt: '{prompt}'
+            user_prompt_for_semantic_mutation = f"""Given this prompt: '{prompt}'
 Task context: {self._get_task_description_for_llm(initial_prompt)}
 Desired output style from target LLM: '{current_output_style_guidance}'
 Instruction for this modification: {strategy_prompts[strategy]}.
 Return only the modified prompt message list, nothing else. Make sure to return a valid JSON object.
 """
-            )
             response = self._call_model(
                 messages=[
                     {
@@ -306,4 +304,3 @@ Return only the new prompt list object.
                 f"Radical innovation mutation failed for prompt '{json.dumps(prompt.get_messages())[:50]}...': {e}. Returning original."
             )
             return prompt
-

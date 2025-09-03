@@ -3,12 +3,10 @@ from typing import Any, Dict, List, Tuple
 import logging
 import random
 
-from deap import tools
 from deap import creator as _creator
 
 from . import prompts as evo_prompts
 from . import reporting
-from ..optimization_config import chat_prompt
 from .. import utils
 
 
@@ -20,8 +18,12 @@ class CrossoverMixin:
     def _deap_crossover_chunking_strategy(
         self, messages_1_str: str, messages_2_str: str
     ) -> Tuple[str, str]:
-        chunks1 = [chunk.strip() for chunk in messages_1_str.split(".") if chunk.strip()]
-        chunks2 = [chunk.strip() for chunk in messages_2_str.split(".") if chunk.strip()]
+        chunks1 = [
+            chunk.strip() for chunk in messages_1_str.split(".") if chunk.strip()
+        ]
+        chunks2 = [
+            chunk.strip() for chunk in messages_2_str.split(".") if chunk.strip()
+        ]
 
         if len(chunks1) >= 2 and len(chunks2) >= 2:
             min_num_chunks = min(len(chunks1), len(chunks2))
@@ -32,7 +34,9 @@ class CrossoverMixin:
             child2_str = ". ".join(child2_chunks) + ("." if child2_chunks else "")
             return child1_str, child2_str
         else:
-            raise ValueError("Not enough chunks in either prompt for chunk-level crossover")
+            raise ValueError(
+                "Not enough chunks in either prompt for chunk-level crossover"
+            )
 
     def _deap_crossover_word_level(
         self, messages_1_str: str, messages_2_str: str
@@ -142,4 +146,3 @@ Follow the instructions provided in the system prompt regarding the JSON output 
                 f"LLM-driven crossover failed: {e}. Falling back to original parents."
             )
             return ind1, ind2
-

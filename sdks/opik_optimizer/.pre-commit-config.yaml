@@ -20,7 +20,7 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
-        files: ^sdks/opik_optimizer
+        files: ^sdks/opik_optimizer/src/opik_optimizer/evolutionary_optimizer/
         exclude: '(sdks/opik_optimizer/src/opik_optimizer/mipro_optimizer/)'
         # `exclude` option will work only from here.
         # The rest of mypy configuration can be moved to pyproject.toml

@@ -85,4 +85,3 @@ class LlmMixin:
                 f"Error calling model '{self.model}': {type(e).__name__} - {e}"
             )
             raise
-

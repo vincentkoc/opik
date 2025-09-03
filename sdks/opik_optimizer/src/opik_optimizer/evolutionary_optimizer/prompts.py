@@ -4,8 +4,7 @@ from typing import Optional
 # only string builders and constants; it has no side effects.
 
 
-INFER_STYLE_SYSTEM_PROMPT = (
-    """You are an expert in linguistic analysis and prompt engineering. Your task is to analyze a few input-output examples from a dataset and provide a concise, actionable description of the desired output style. This description will be used to guide other LLMs in generating and refining prompts.
+INFER_STYLE_SYSTEM_PROMPT = """You are an expert in linguistic analysis and prompt engineering. Your task is to analyze a few input-output examples from a dataset and provide a concise, actionable description of the desired output style. This description will be used to guide other LLMs in generating and refining prompts.
 
 Focus on characteristics like:
 - **Length**: (e.g., single word, short phrase, one sentence, multiple sentences, a paragraph)
@@ -18,11 +17,13 @@ Provide a single string that summarizes this style. This summary should be direc
 For example: 'Outputs should be a single, concise proper noun.' OR 'Outputs should be a short paragraph explaining the reasoning, followed by a direct answer, avoiding conversational pleasantries.' OR 'Outputs are typically 1-2 sentences, providing a direct factual answer.'
 Return ONLY this descriptive string, with no preamble or extra formatting.
 """
-)
 
 
 def semantic_mutation_system_prompt(output_style_guidance: Optional[str]) -> str:
-    style = output_style_guidance or "Produce clear, effective, and high-quality responses suitable for the task."
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
     return (
         "You are a prompt engineering expert. Your goal is to modify prompts to improve their "
         f"effectiveness in eliciting specific types of answers, particularly matching the style: '{style}'. "
@@ -45,7 +46,10 @@ def rephrase_system_prompt() -> str:
 
 
 def fresh_start_system_prompt(output_style_guidance: Optional[str]) -> str:
-    style = output_style_guidance or "Produce clear, effective, and high-quality responses suitable for the task."
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
     return (
         "You are an expert prompt engineer. Your task is to generate novel, effective prompts from scratch "
         "based on a task description, specifically aiming for prompts that elicit answers in the style: "
@@ -54,7 +58,10 @@ def fresh_start_system_prompt(output_style_guidance: Optional[str]) -> str:
 
 
 def variation_system_prompt(output_style_guidance: Optional[str]) -> str:
-    style = output_style_guidance or "Produce clear, effective, and high-quality responses suitable for the task."
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
     return f"""You are an expert prompt engineer specializing in creating diverse and effective prompts. Given an initial prompt, your task is to generate a diverse set of alternative prompts.
 
 For each prompt variation, consider:
@@ -87,7 +94,10 @@ Each prompt variation should aim to get the target LLM to produce answers matchi
 
 
 def llm_crossover_system_prompt(output_style_guidance: Optional[str]) -> str:
-    style = output_style_guidance or "Produce clear, effective, and high-quality responses suitable for the task."
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
     return f"""You are an expert prompt engineer specializing in creating novel prompts by intelligently blending existing ones.
 Given two parent prompts, your task is to generate one or two new child prompts that effectively combine the strengths, styles, or core ideas of both parents.
 The children should be coherent and aim to explore a potentially more effective region of the prompt design space, with a key goal of eliciting responses from the target language model in the following style: '{style}'.
@@ -111,11 +121,13 @@ Return a JSON object that is a list of both child prompts. Each child prompt is 
 
 
 def radical_innovation_system_prompt(output_style_guidance: Optional[str]) -> str:
-    style = output_style_guidance or "Produce clear, effective, and high-quality responses suitable for the task."
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
     return f"""You are an expert prompt engineer and a creative problem solver.
 Given a task description and an existing prompt for that task (which might be underperforming), your goal is to generate a new, significantly improved, and potentially very different prompt.
 Do not just make minor edits. Think about alternative approaches, structures, and phrasings that could lead to better performance.
 Consider clarity, specificity, constraints, and how to best guide the language model for the described task TO PRODUCE OUTPUTS IN THE FOLLOWING STYLE: '{style}'.
 Return only the new prompt string, with no preamble or explanation.
 """
-
