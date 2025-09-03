@@ -51,22 +51,9 @@ class PopulationOps:
             # Fresh starts
             if num_fresh_starts > 0:
                 init_pop_report.start_fresh_prompts(num_fresh_starts)
-                fresh_start_user_prompt = f"""Here is a description of a task:
-    {task_desc_for_llm}
-
-    The goal is to generate prompts that will make a target LLM produce responses in the following style: '{current_output_style_guidance}'.
-
-    Please generate {num_fresh_starts} diverse and effective prompt(s) for a language model to accomplish this task, ensuring they guide towards this specific output style.
-    Focus on clarity, completeness, and guiding the model effectively towards the desired style. Explore different structural approaches.
-
-    Example of valid response: [
-        ["role": "<role>", "content": "<Prompt targeting specified style.>"],
-        ["role": "<role>", "content": "<Another prompt designed for the output style.>"]
-    ]
-
-    Your response MUST be a valid JSON list of AI messages. Do NOT include any other text, explanations, or Markdown formatting like ```json ... ``` around the list.
-
-    """
+                fresh_start_user_prompt = evo_prompts.fresh_start_user_prompt(
+                    task_desc_for_llm, current_output_style_guidance, num_fresh_starts
+                )
                 try:
                     response_content = self._call_model(
                         messages=[
@@ -123,31 +110,12 @@ class PopulationOps:
             # Variations on the initial prompt
             if num_variations_on_initial > 0:
                 init_pop_report.start_variations(num_variations_on_initial)
-                user_prompt_for_variation = f"""Initial prompt:
-    '''{prompt.get_messages()}'''
-
-    Task context:
-    {task_desc_for_llm}
-    Desired output style from target LLM: '{current_output_style_guidance}'
-
-    Generate {num_variations_on_initial} diverse alternative prompts based on the initial prompt above, keeping the task context and desired output style in mind.
-    All generated prompt variations should strongly aim to elicit answers from the target LLM matching the style: '{current_output_style_guidance}'.
-    For each variation, consider how to best achieve this style, e.g., by adjusting specificity, structure, phrasing, constraints, or by explicitly requesting it.
-
-    Return a JSON array of prompts with the following structure:
-    {{
-        "prompts": [
-            {{
-                "prompt": [{{"role": "<role>", "content": "<content>"}}],
-                "strategy": "brief description of the variation strategy used, e.g., 'direct instruction for target style'"
-            }}
-            // ... more prompts if num_variations_on_initial > 1
-        ]
-    }}
-    Ensure a good mix of variations, all targeting the specified output style from the end LLM.
-
-    Return a valid JSON object that is correctly escaped. Return nothing else, d`o not include any additional text or Markdown formatting.
-    """
+                user_prompt_for_variation = evo_prompts.variation_user_prompt(
+                    prompt.get_messages(),
+                    task_desc_for_llm,
+                    current_output_style_guidance,
+                    num_variations_on_initial,
+                )
                 try:
                     response_content_variations = self._call_model(
                         messages=[

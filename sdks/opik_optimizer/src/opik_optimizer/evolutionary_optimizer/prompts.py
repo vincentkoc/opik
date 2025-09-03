@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Dict
 
 # Centralized prompt templates used by EvolutionaryOptimizer. This file contains
 # only string builders and constants; it has no side effects.
@@ -142,4 +142,170 @@ Given a task description and an existing prompt for that task (which might be un
 Do not just make minor edits. Think about alternative approaches, structures, and phrasings that could lead to better performance.
 Consider clarity, specificity, constraints, and how to best guide the language model for the described task TO PRODUCE OUTPUTS IN THE FOLLOWING STYLE: '{style}'.
 Return only the new prompt string, with no preamble or explanation.
+"""
+
+
+def llm_crossover_user_prompt(
+    parent1_messages: List[Dict[str, str]],
+    parent2_messages: List[Dict[str, str]],
+    output_style_guidance: Optional[str],
+) -> str:
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
+    return f"""Parent Prompt 1:
+'''{parent1_messages}'''
+
+Parent Prompt 2:
+'''{parent2_messages}'''
+
+Desired output style from target LLM for children prompts: '{style}'
+
+Please generate TWO child prompts by intelligently blending the ideas, styles, or structures from these two parents, ensuring the children aim to elicit the desired output style.
+Follow the instructions provided in the system prompt regarding the JSON output format:
+[
+    {{"role": "<role>", "content": "<content>"}}, {{"role": "<role>", "content": "<content>"}}
+]
+"""
+
+
+def mutation_strategy_prompts(output_style_guidance: Optional[str]) -> Dict[str, str]:
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
+    return {
+        "rephrase": (
+            "Create a different way to express the same instruction, possibly with a different "
+            "length or structure, ensuring it still aims for an answer from the target LLM in the style of: "
+            f"'{style}'."
+        ),
+        "simplify": (
+            "Simplify the instruction while maintaining its core meaning, potentially making it more concise, "
+            "to elicit an answer in the style of: "
+            f"'{style}'."
+        ),
+        "elaborate": (
+            "Add more relevant detail and specificity to the instruction, potentially increasing its length, "
+            "but only if it helps achieve a more accurate answer from the target LLM in the style of: "
+            f"'{style}'."
+        ),
+        "restructure": (
+            "Change the structure of the instruction (e.g., reorder sentences, combine/split ideas) while keeping its intent, ensuring the new structure strongly guides towards an output in the style of: "
+            f"'{style}'."
+        ),
+        "focus": (
+            "Emphasize the key aspects of the instruction, perhaps by rephrasing or adding clarifying statements, "
+            "to better elicit an answer in the style of: "
+            f"'{style}'."
+        ),
+        "increase_complexity_and_detail": (
+            "Significantly elaborate on this instruction. Add more details, examples, context, or constraints to make it more comprehensive. "
+            "The goal of this elaboration is to make the prompt itself more detailed, so that it VERY CLEARLY guides the target LLM to produce a highly accurate final answer in the style of: "
+            f"'{style}'. The prompt can be long if needed to achieve this output style."
+        ),
+    }
+
+
+def semantic_mutation_user_prompt(
+    prompt_messages: List[Dict[str, str]],
+    task_description: str,
+    output_style_guidance: Optional[str],
+    strategy_instruction: str,
+) -> str:
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
+    return f"""Given this prompt: '{prompt_messages}'
+Task context: {task_description}
+Desired output style from target LLM: '{style}'
+Instruction for this modification: {strategy_instruction}.
+Return only the modified prompt message list, nothing else. Make sure to return a valid JSON object.
+"""
+
+
+def radical_innovation_user_prompt(
+    task_description: str,
+    output_style_guidance: Optional[str],
+    existing_prompt_messages: List[Dict[str, str]],
+) -> str:
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
+    return f"""Task Context:
+{task_description}
+Desired output style from target LLM: '{style}'
+
+Existing Prompt (which may be underperforming):
+'''{existing_prompt_messages}'''
+
+Please generate a new, significantly improved, and potentially very different prompt for this task.
+Focus on alternative approaches, better clarity, or more effective guidance for the language model, aiming for the desired output style.
+Return only the new prompt list object.
+"""
+
+
+def fresh_start_user_prompt(
+    task_description: str,
+    output_style_guidance: Optional[str],
+    num_to_generate: int,
+) -> str:
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
+    return f"""Here is a description of a task:
+{task_description}
+
+The goal is to generate prompts that will make a target LLM produce responses in the following style: '{style}'.
+
+Please generate {num_to_generate} diverse and effective prompt(s) for a language model to accomplish this task, ensuring they guide towards this specific output style.
+Focus on clarity, completeness, and guiding the model effectively towards the desired style. Explore different structural approaches.
+
+Example of valid response: [
+    ["role": "<role>", "content": "<Prompt targeting specified style.>"],
+    ["role": "<role>", "content": "<Another prompt designed for the output style.>"]
+]
+
+Your response MUST be a valid JSON list of AI messages. Do NOT include any other text, explanations, or Markdown formatting like ```json ... ``` around the list.
+"""
+
+
+def variation_user_prompt(
+    initial_prompt_messages: List[Dict[str, str]],
+    task_description: str,
+    output_style_guidance: Optional[str],
+    num_variations: int,
+) -> str:
+    style = (
+        output_style_guidance
+        or "Produce clear, effective, and high-quality responses suitable for the task."
+    )
+    return f"""Initial prompt:
+'''{initial_prompt_messages}'''
+
+Task context:
+{task_description}
+Desired output style from target LLM: '{style}'
+
+Generate {num_variations} diverse alternative prompts based on the initial prompt above, keeping the task context and desired output style in mind.
+All generated prompt variations should strongly aim to elicit answers from the target LLM matching the style: '{style}'.
+For each variation, consider how to best achieve this style, e.g., by adjusting specificity, structure, phrasing, constraints, or by explicitly requesting it.
+
+Return a JSON array of prompts with the following structure:
+{{
+    "prompts": [
+        {{
+            "prompt": [{{"role": "<role>", "content": "<content>"}}],
+            "strategy": "brief description of the variation strategy used, e.g., 'direct instruction for target style'"
+        }}
+        // ... more prompts if num_variations > 1
+    ]
+}}
+Ensure a good mix of variations, all targeting the specified output style from the end LLM.
+
+Return a valid JSON object that is correctly escaped. Return nothing else, do not include any additional text or Markdown formatting.
 """

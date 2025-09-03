@@ -95,20 +95,9 @@ class CrossoverOps:
         parent2_messages: List[Dict[str, str]] = ind2
         current_output_style_guidance = self.output_style_guidance
 
-        user_prompt_for_llm_crossover = f"""Parent Prompt 1:
-'''{parent1_messages}'''
-
-Parent Prompt 2:
-'''{parent2_messages}'''
-
-Desired output style from target LLM for children prompts: '{current_output_style_guidance}'
-
-Please generate TWO child prompts by intelligently blending the ideas, styles, or structures from these two parents, ensuring the children aim to elicit the desired output style.
-Follow the instructions provided in the system prompt regarding the JSON output format:
-[
-    {{"role": "<role>", "content": "<content>"}}, {{"role": "<role>", "content": "<content>"}}
-]
-"""
+        user_prompt_for_llm_crossover = evo_prompts.llm_crossover_user_prompt(
+            parent1_messages, parent2_messages, current_output_style_guidance
+        )
         try:
             logger.debug(
                 f"Attempting LLM-driven crossover between: '{parent1_messages[:50]}...' and '{parent2_messages[:50]}...' aiming for style: '{current_output_style_guidance[:30]}...'"

@@ -77,44 +77,17 @@ class MutationOps:
                 ]
             )
 
-            strategy_prompts = {
-                "rephrase": (
-                    "Create a different way to express the same instruction, possibly with a different "
-                    "length or structure, ensuring it still aims for an answer from the target LLM in the style of: "
-                    f"'{current_output_style_guidance}'."
-                ),
-                "simplify": (
-                    "Simplify the instruction while maintaining its core meaning, potentially making it more concise, "
-                    "to elicit an answer in the style of: "
-                    f"'{current_output_style_guidance}'."
-                ),
-                "elaborate": (
-                    "Add more relevant detail and specificity to the instruction, potentially increasing its length, "
-                    "but only if it helps achieve a more accurate answer from the target LLM in the style of: "
-                    f"'{current_output_style_guidance}'."
-                ),
-                "restructure": (
-                    "Change the structure of the instruction (e.g., reorder sentences, combine/split ideas) while keeping its intent, ensuring the new structure strongly guides towards an output in the style of: "
-                    f"'{current_output_style_guidance}'."
-                ),
-                "focus": (
-                    "Emphasize the key aspects of the instruction, perhaps by rephrasing or adding clarifying statements, "
-                    "to better elicit an answer in the style of: "
-                    f"'{current_output_style_guidance}'."
-                ),
-                "increase_complexity_and_detail": (
-                    "Significantly elaborate on this instruction. Add more details, examples, context, or constraints to make it more comprehensive. "
-                    "The goal of this elaboration is to make the prompt itself more detailed, so that it VERY CLEARLY guides the target LLM to produce a highly accurate final answer in the style of: "
-                    f"'{current_output_style_guidance}'. The prompt can be long if needed to achieve this output style."
-                ),
-            }
-
-            user_prompt_for_semantic_mutation = f"""Given this prompt: '{prompt}'
-Task context: {self._get_task_description_for_llm(initial_prompt)}
-Desired output style from target LLM: '{current_output_style_guidance}'
-Instruction for this modification: {strategy_prompts[strategy]}.
-Return only the modified prompt message list, nothing else. Make sure to return a valid JSON object.
-"""
+            strategy_prompts = evo_prompts.mutation_strategy_prompts(
+                current_output_style_guidance
+            )
+            user_prompt_for_semantic_mutation = (
+                evo_prompts.semantic_mutation_user_prompt(
+                    prompt.get_messages(),
+                    self._get_task_description_for_llm(initial_prompt),
+                    current_output_style_guidance,
+                    strategy_prompts[strategy],
+                )
+            )
             response = self._call_model(
                 messages=[
                     {
@@ -270,17 +243,9 @@ Return only the modified prompt message list, nothing else. Make sure to return 
         task_desc_for_llm = self._get_task_description_for_llm(initial_prompt)
         current_output_style_guidance = self.output_style_guidance
 
-        user_prompt_for_radical_innovation = f"""Task Context:
-{task_desc_for_llm}
-Desired output style from target LLM: '{current_output_style_guidance}'
-
-Existing Prompt (which may be underperforming):
-'''{prompt.get_messages()}'''
-
-Please generate a new, significantly improved, and potentially very different prompt for this task.
-Focus on alternative approaches, better clarity, or more effective guidance for the language model, aiming for the desired output style.
-Return only the new prompt list object.
-"""
+        user_prompt_for_radical_innovation = evo_prompts.radical_innovation_user_prompt(
+            task_desc_for_llm, current_output_style_guidance, prompt.get_messages()
+        )
         try:
             new_prompt_str = self._call_model(
                 messages=[
