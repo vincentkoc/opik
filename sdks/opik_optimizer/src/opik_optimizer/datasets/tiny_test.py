@@ -32,8 +32,7 @@ def tiny_test(test_mode: bool = False) -> opik.Dataset:
         # Use the generic JSON loader with streaming for efficiency
         hf_dataset = ds.load_dataset(
             "json",
-            data_files=
-            "hf://datasets/vincentkoc/tiny_qa_benchmark_pp/data/core_en/core_en.jsonl",
+            data_files="hf://datasets/vincentkoc/tiny_qa_benchmark_pp/data/core_en/core_en.jsonl",
             streaming=True,
             download_config=download_config,
         )["train"]
