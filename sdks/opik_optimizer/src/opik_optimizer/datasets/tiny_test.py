@@ -33,7 +33,7 @@ def tiny_test(test_mode: bool = False) -> opik.Dataset:
         hf_dataset = ds.load_dataset(
             "json",
             data_files=
-            "https://huggingface.co/datasets/vincentkoc/tiny_qa_benchmark_pp/resolve/main/data/core_en/core_en.jsonl?download=true",
+            "hf://datasets/vincentkoc/tiny_qa_benchmark_pp/data/core_en/core_en.jsonl",
             streaming=True,
             download_config=download_config,
         )["train"]
