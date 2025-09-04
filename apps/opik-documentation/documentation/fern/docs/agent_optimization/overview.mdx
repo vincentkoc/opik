@@ -1,8 +1,8 @@
 ---
 title: "Opik Agent Optimization Overview"
 subtitle: "Automate enhancing LLM prompts and agent performance."
-description: "Learn about Opik's automated LLM prompt and agent optimization SDK. Discover MetaPrompt, Few-shot Bayesian, MIPRO, and Evolutionary optimization algorithms for enhanced performance."
-keywords: "LLM optimization, prompt engineering, agent optimization, MetaPrompt, Few-shot learning, Bayesian optimization, MIPRO, Evolutionary algorithms, DSPy"
+description: "Learn about Opik's automated LLM prompt and agent optimization SDK. Discover MetaPrompt, Few-shot Bayesian, GEPA, MIPRO, and Evolutionary optimization algorithms for enhanced performance."
+keywords: "LLM optimization, prompt engineering, agent optimization, MetaPrompt, Few-shot learning, Bayesian optimization, GEPA, MIPRO, Evolutionary algorithms, DSPy"
 og:image: "/img/agent_optimization/introducing.png"
 ---
 
@@ -104,6 +104,7 @@ The following algorithms have been implemented:
 | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [MetaPrompt Optimization](/agent_optimization/algorithms/metaprompt_optimizer)              | Uses an LLM ("reasoning model") to critique and iteratively refine an initial instruction prompt. Good for general prompt wording, clarity, and structural improvements.                                             |
 | [Few-shot Bayesian Optimization](/agent_optimization/algorithms/fewshot_bayesian_optimizer) | Specifically for chat models, this optimizer uses Bayesian optimization (Optuna) to find the optimal number and combination of few-shot examples (demonstrations) to accompany a system prompt.                      |
+| [GEPA Optimization](/agent_optimization/algorithms/gepa_optimizer)                          | System optimization via reflective text evolution (Genetic-Pareto). Optimizes text components (e.g., system prompts) against metrics with reflective mutation and Pareto selection. Good for general prompt/code text. |
 | [MIPRO Optimization](/agent_optimization/algorithms/mipro_optimizer)                        | A prompt engineering algorithm that uses a MIPRO (Multi-Instance Prompt Refinement) approach to generate a set of candidate prompts and then uses a Bayesian optimization algorithm to identify the best prompt.     |
 | [Evolutionary Optimization](/agent_optimization/algorithms/evolutionary_optimizer)          | Employs genetic algorithms to evolve a population of prompts. Can discover novel prompt structures and supports multi-objective optimization (e.g., score vs. length). Can use LLMs for advanced mutation/crossover. |
 
