@@ -1,0 +1,109 @@
+---
+title: "GEPA Optimizer: Reflective Text Evolution"
+subtitle: "Optimize system prompts with GEPA (Genetic-Pareto)."
+description: "Use GEPA to evolve and select better prompt text via reflective mutation and Pareto selection, integrated with Opik datasets and reporting."
+pytest_codeblocks_skip: true
+---
+
+The GepaOptimizer integrates the external [GEPA](https://github.com/gepa-ai/gepa) package with Opik to optimize text components like a system prompt using reflective text evolution and Pareto selection.
+
+<Info>
+  GEPA stands for <b>Genetic-Pareto</b> and optimizes arbitrary text components by iteratively reflecting on outputs, proposing mutations, and selecting candidates using Pareto strategies.
+</Info>
+
+<Warning>
+  Requirements:
+  <ul>
+    <li><code>pip install gepa</code></li>
+    <li>Set <code>OPENAI_API_KEY</code> (or provider-specific keys) for LiteLLM-backed models</li>
+  </ul>
+</Warning>
+
+## How It Works
+
+`GepaOptimizer` wraps `gepa.optimize(...)` using GEPA's DefaultAdapter. It maps an Opik `Dataset` into GEPA's default data format and runs reflective mutation + candidate selection to discover better system prompt text.
+
+- <b>Task model</b>: provided as `model` (LiteLLM provider string).
+- <b>Reflection model</b>: `reflection_model` (defaults to `model`). Used by GEPA's reflective mutation proposer.
+- <b>Data mapping</b>: Opik dataset items are converted to GEPA DefaultAdapter's data instances: `{ input, answer, additional_context }`.
+- <b>Scoring</b>: GEPA's DefaultAdapter uses a simple correctness heuristic (answer substring containment) to compute scores internally.
+
+<Note>
+  If you want GEPA to optimize directly against a custom Opik metric (e.g., Levenshtein), a custom GEPA adapter would be needed. The current integration uses GEPA's DefaultAdapter scoring but records your metric name in the Opik result for consistency.
+</Note>
+
+## Example Usage
+
+```python
+from typing import Any, Dict
+
+from opik.evaluation.metrics import LevenshteinRatio
+from opik.evaluation.metrics.score_result import ScoreResult
+
+from opik_optimizer import TaskConfig, datasets
+from opik_optimizer.gepa_optimizer import GepaOptimizer
+
+
+def levenshtein_ratio(dataset_item: Dict[str, Any], llm_output: str) -> ScoreResult:
+    return LevenshteinRatio().score(reference=dataset_item["label"], output=llm_output)
+
+
+# Dataset and task configuration
+dataset = datasets.tiny_test()
+task_config = TaskConfig(
+    instruction_prompt=(
+        "You are a helpful assistant. Answer concisely with the exact answer string."
+    ),
+    input_dataset_fields=["text"],
+    output_dataset_field="label",
+    use_chat_prompt=True,
+    tools=[],
+)
+
+# Optimizer
+optimizer = GepaOptimizer(
+    model="openai/gpt-4o-mini",
+    reflection_model="openai/gpt-4o",
+    project_name="GEPA_TinyTest",
+    temperature=0.2,
+    max_tokens=200,
+)
+
+# Run optimization
+result = optimizer.optimize_prompt(
+    dataset=dataset,
+    metric=levenshtein_ratio,  # recorded in results; GEPA DefaultAdapter uses correctness scoring internally
+    task_config=task_config,
+    max_metric_calls=12,
+    reflection_minibatch_size=2,
+    n_samples=5,
+)
+
+print(result.prompt, result.score)
+```
+
+## Parameters
+
+- <b>`model`</b>: LiteLLM model string for task inference (e.g., `"openai/gpt-4o-mini"`).
+- <b>`reflection_model`</b>: LiteLLM model string for GEPA reflection (defaults to `model`).
+- <b>`max_metric_calls`</b>: Budget for GEPA's evaluation calls.
+- <b>`reflection_minibatch_size`</b>: Batch size for reflection updates.
+- <b>`candidate_selection_strategy`</b>: `"pareto"` (default) or `"best"`.
+- <b>`n_samples`</b>: Optional dataset sub-sample size for quick runs.
+
+## Result
+
+The optimizer returns an `OptimizationResult` with:
+
+- <b>`prompt`</b>: best system prompt text (as a single-message chat prompt).
+- <b>`score`</b>: aggregate validation score reported by GEPA.
+- <b>`metric_name`</b>: your metric function name for tracking in Opik.
+- <b>`history`</b>: candidate-wise scores and prompt text.
+- <b>`details`</b>: GEPA metadata (candidate counts, scores, parents) and model info.
+
+## Next Steps
+
+- Learn more about [Optimization Algorithms](/agent_optimization/overview#optimization-algorithms)
+- Configure your models via [LiteLLM Support](/agent_optimization/opik_optimizer/litellm_support)
+- Explore code in `sdks/opik_optimizer/scripts/gepa_tiny_test_example.py`
+
